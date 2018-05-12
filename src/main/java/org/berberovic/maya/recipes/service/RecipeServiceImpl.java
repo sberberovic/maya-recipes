@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RecipeServiceImpl implements RecipeService {
@@ -36,24 +37,37 @@ public class RecipeServiceImpl implements RecipeService {
 
     @Override
     public Recipe findRecipeById(Integer recipeId) {
-        return recipeRepository.getOne(recipeId);
+        Optional<Recipe> result = recipeRepository.findById(recipeId);
+        return result.isPresent() ? result.get() : null;
     }
 
     @Override
     public Recipe updateRecipe(Integer recipeId, Recipe recipe) {
-        Recipe saved = recipeRepository.getOne(recipeId);
-        saved.setName(recipe.getName());
-        saved.setCategory(recipe.getCategory());
-        saved.setCookingTime(recipe.getCookingTime());
-        saved.setPreparationTime(recipe.getPreparationTime());
-        saved.setNrOfPersons(recipe.getNrOfPersons());
-        saved.setNumberOfStars(recipe.getNumberOfStars());
-        return recipeRepository.save(saved);
+        Optional<Recipe> result = recipeRepository.findById(recipeId);
+        if (result.isPresent()) {
+            Recipe savedRecipe = result.get();
+            savedRecipe.setName(recipe.getName());
+            savedRecipe.setCategory(recipe.getCategory());
+            savedRecipe.setCookingTime(recipe.getCookingTime());
+            savedRecipe.setPreparationTime(recipe.getPreparationTime());
+            savedRecipe.setNrOfPersons(recipe.getNrOfPersons());
+            savedRecipe.setNumberOfStars(recipe.getNumberOfStars());
+            return recipeRepository.save(savedRecipe);
+        } else {
+            Recipe newRecipe = new Recipe(recipe.getName(), recipe.getCategory());
+            newRecipe.setName(recipe.getName());
+            newRecipe.setCategory(recipe.getCategory());
+            newRecipe.setCookingTime(recipe.getCookingTime());
+            newRecipe.setPreparationTime(recipe.getPreparationTime());
+            newRecipe.setNrOfPersons(recipe.getNrOfPersons());
+            newRecipe.setNumberOfStars(recipe.getNumberOfStars());
+            return recipeRepository.save(newRecipe);
+        }
     }
 
     @Override
     public void deleteRecipe(Integer recipeId) {
-        Recipe saved = recipeRepository.getOne(recipeId);
-        recipeRepository.delete(saved);
+        Optional<Recipe> saved = recipeRepository.findById(recipeId);
+        recipeRepository.delete(saved.get());
     }
 }

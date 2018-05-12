@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -26,24 +27,31 @@ public class RecipeController {
     }
 
     @RequestMapping(value = "/recipes", method = RequestMethod.POST, produces = {"application/json"})
+    @ResponseBody
     public Recipe createRecipe(@RequestBody Recipe recipe) {
         Recipe newRecipe = recipeService.createRecipe(recipe);
         return newRecipe;
     }
 
-    @RequestMapping(value = "/recipes/{id}", method = RequestMethod.GET, produces = {"application/json"})
-    public Recipe getRecipeById(@PathVariable(value = "id") Integer recipeId) {
+    @RequestMapping(value = "/recipes", params = "id", method = RequestMethod.GET, produces = {"application/json"})
+    @ResponseBody
+    public Recipe getRecipeById(@RequestParam("id") Integer recipeId) {
         Recipe result = recipeService.findRecipeById(recipeId);
+        if (result == null) {
+            throw new EntityNotFoundException("Recipe with id '" + recipeId +"' does not exist!");
+        }
         return result;
     }
 
-    @RequestMapping(value = "/recipes/{category}", method = RequestMethod.GET, produces = {"application/json"})
-    public List<Recipe> getRecipeByCategory(@PathVariable(value = "category") RecipeCategory recipeCategory) {
+    @RequestMapping(value = "/recipes", params = "category", method = RequestMethod.GET, produces = {"application/json"})
+    @ResponseBody
+    public List<Recipe> getRecipeByCategory(@RequestParam("category") RecipeCategory recipeCategory) {
         List<Recipe> result = recipeService.listAllRecipes(recipeCategory);
         return result;
     }
 
     @RequestMapping(value = "/recipes/{id}", method = RequestMethod.PUT, produces = {"application/json"})
+    @ResponseBody
     public Recipe updateRecipe(@PathVariable(value = "id") Integer recipeId, @Valid @RequestBody Recipe recipe) {
         Recipe updated = recipeService.updateRecipe(recipeId, recipe);
         return updated;
